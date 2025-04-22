@@ -1,0 +1,8 @@
+services:
+  php:
+    build: .
+    container_name: json-compressor
+    volumes:
+      - ./:/srv
+    working_dir: /srv
+    command: tail -f /dev/null

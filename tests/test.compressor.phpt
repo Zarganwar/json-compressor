@@ -6,21 +6,26 @@ use Zarganwar\JsonCompressor\Compressor;
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $compressor = new Compressor();
-$data = file_get_contents(__DIR__ . '/test.json');
-Assert::type('array', json_decode($data, true));
 
-$compressedJson = $compressor->compress($data);
-$compressedArray = $compressor->compress($data, true);
+$files = [
+	'01-orders',
+	'02-logs',
+	'03-products',
+	'04-nested-repeat',
+	'05-5mb-sample',
+];
 
-Assert::type('string', $compressedJson);
-Assert::type('array', $compressedArray);
-Assert::true(array_key_exists('compressionMap', $compressedArray));
-Assert::true(array_key_exists('compressedJson', $compressedArray));
+foreach ($files as $file) {
+	$source = file_get_contents(__DIR__ . "/files/{$file}.json");
+	$expected = file_get_contents(__DIR__ . "/files/{$file}-compress.json");
+	$compressed = $compressor->compress($source);
+	$decompressed = $compressor->decompress($compressed);
 
-$decompressedString = $compressor->decompress($compressedJson);
-$decompressedArray = $compressor->decompress($compressedJson, true);
+	Assert::equal($expected, $compressed, "Compression {$file} failed");
+	Assert::equal($source, $decompressed, "Decompression {$file} failed");
 
-Assert::type('string', $decompressedString);
-Assert::type('array', $decompressedArray);
-Assert::type('bool', $decompressedArray['userData']['preferences']['notifications']['email']);
-Assert::equal($data, $compressedJson);
+	$sourceLen = mb_strlen($source);
+	$compressedLen = mb_strlen($compressed);
+
+	Assert::true($sourceLen > $compressedLen, "Compression {$file} failed");
+}
