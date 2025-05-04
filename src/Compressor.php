@@ -89,10 +89,10 @@ final class Compressor
 	 * @param array $counts
 	 * @return void
 	 */
-	private function countKeys(array $data, array &$counts): void
+	private function countKeys(array $data, array &$counts)
 	{
 		foreach ($data as $key => $value) {
-			$counts[$key] = ($counts[$key] ?? 0) + 1;
+			$counts[$key] = (isset($counts[$key]) ? $counts[$key] : 0) + 1;
 			if (is_array($value)) {
 				$this->countKeys($value, $counts);
 			}
@@ -112,9 +112,9 @@ final class Compressor
 		array $data,
 		array &$map,
 		array &$usedKeys,
-		string &$nextChar,
+		&$nextChar,
 		array &$counts
-	): array
+	)
 	{
 		$compressed = [];
 
@@ -125,7 +125,7 @@ final class Compressor
 			if ($existing !== false) {
 				$compressedKey = $existing;
 			} else {
-				$freq = $counts[$originalKey] ?? 0;
+				$freq = isset($counts[$originalKey]) ? $counts[$originalKey] : 0;
 				$lenOrig = strlen($originalKey);
 				$peek = $nextChar;
 				$candidate = $this->getCompressedKey($usedKeys, $peek);
@@ -166,7 +166,7 @@ final class Compressor
 	 * @param string $nextChar
 	 * @return string
 	 */
-	private function getCompressedKey(array $usedKeys, string &$nextChar): string
+	private function getCompressedKey(array $usedKeys, &$nextChar)
 	{
 		while (in_array($nextChar, $usedKeys, true)) {
 			$nextChar = $this->incrementChar($nextChar);
@@ -180,7 +180,7 @@ final class Compressor
 	 * @param string $char
 	 * @return string
 	 */
-	private function incrementChar(string $char): string
+	private function incrementChar($char)
 	{
 		$chars = str_split($char);
 		$i = count($chars) - 1;
@@ -209,7 +209,7 @@ final class Compressor
 	 * @return array
 	 * @throws Exception
 	 */
-	private function decompressArray(array $compressedData, array $compressionMap): array
+	private function decompressArray(array $compressedData, array $compressionMap)
 	{
 		return $this->decompressRecursive($compressedData, $compressionMap);
 	}
@@ -220,12 +220,12 @@ final class Compressor
 	 * @param array $map
 	 * @return array
 	 */
-	private function decompressRecursive(array $data, array $map): array
+	private function decompressRecursive(array $data, array $map)
 	{
 		$decompressed = [];
 
 		foreach ($data as $key => $value) {
-			$origin = $map[$key] ?? $key;
+			$origin = isset($map[$key]) ? $map[$key] : $key;
 			if (is_array($value)) {
 				$decompressed[$origin] = $this->decompressRecursive($value, $map);
 			} else {
