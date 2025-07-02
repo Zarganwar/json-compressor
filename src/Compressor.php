@@ -4,6 +4,9 @@ namespace Zarganwar\JsonCompressor;
 
 use Exception;
 use Zarganwar\JsonCompressor\Exception\CompressorException;
+use function defined;
+use const JSON_UNESCAPED_SLASHES;
+use const JSON_UNESCAPED_UNICODE;
 
 final class Compressor
 {
@@ -19,7 +22,11 @@ final class Compressor
 
 		return $returnArray
 			? $compressed
-			: json_encode($compressed, JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+			: json_encode($compressed,
+				defined('JSON_PRESERVE_ZERO_FRACTION') ? JSON_PRESERVE_ZERO_FRACTION : 1024
+				| JSON_UNESCAPED_SLASHES
+				| JSON_UNESCAPED_UNICODE
+			);
 	}
 
 
